@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block pagetitle %}New crop assessment{% endblock pagetitle %}
+{% block body %}
+<style>
+  body { background: #f4f7f2; min-height: 100vh; color: #193324; }
+  .assessment-wrap { max-width: 1050px; margin: 0 auto; padding: 42px 18px 64px; }
+  .eyebrow { color: #477451; font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .assessment-title { color: #173b27; font-weight: 750; letter-spacing: -.03em; }
+  .assessment-card { background: #fff; border: 1px solid #e2e9df; border-radius: 18px; box-shadow: 0 14px 36px #183b2510; }
+  .form-label { font-weight: 650; }
+  .form-control, .form-select { min-height: 48px; border-color: #d6e0d5; }
+  .upload-zone { border: 2px dashed #b8cdb7; border-radius: 14px; padding: 24px; background: #f8fbf7; }
+  .btn-farm { background: #1f6a3b; border-color: #1f6a3b; color: #fff; font-weight: 700; min-height: 50px; }
+  .btn-farm:hover { background: #174f2c; color: #fff; }
+  .helper { color: #657568; font-size: .9rem; }
+  .step-number { background: #e5f2e5; color: #23623a; border-radius: 50%; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 8px; }
+</style>
+<main class="assessment-wrap">
+  <p class="eyebrow mb-2">CropCare · Image screening</p>
+  <h1 class="assessment-title display-5 mb-2">Check a crop leaf</h1>
+  <p class="helper mb-4">Share a clear photo and a little field context to get an AI screening and practical next steps.</p>
+
+  {% if error %}<div class="alert alert-warning" role="alert">{{ error }}</div>{% endif %}
+
+  <div class="assessment-card p-4 p-lg-5">
+    <form action="/submit" method="POST" enctype="multipart/form-data" id="assessment-form">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <label class="form-label" for="crop">Crop</label>
+          <select class="form-select" id="crop" name="crop" required>
+            <option value="" selected disabled>Select a crop</option>
+            {% for crop_option in crops %}<option value="{{ crop_option }}">{{ crop_option }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="growth_stage">Growth stage</label>
+          <select class="form-select" id="growth_stage" name="growth_stage" required>
+            <option value="" selected disabled>Select a stage</option>
+            <option>Seedling</option><option>Vegetative growth</option><option>Flowering</option>
+            <option>Fruiting / grain filling</option><option>Maturity / harvest</option><option>Not sure</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="location">Village / district</label>
+          <input class="form-control" id="location" name="location" maxlength="120" placeholder="e.g. Ludhiana, Punjab" required>
+          <div class="form-text">Location is recorded as context; it is not used for weather or outbreak forecasting.</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="image">Leaf photo</label>
+          <div class="upload-zone">
+            <input class="form-control" type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" required>
+            <div class="helper mt-2">Use a close, sharp photo in natural light. JPG, PNG or WebP, up to 8 MB.</div>
+            <img id="image-preview" alt="Selected leaf photo preview" class="img-fluid rounded mt-3 d-none" style="max-height: 260px;">
+          </div>
+        </div>
+        <div class="col-12 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pt-1">
+          <div class="helper"><span class="step-number">1</span>Crop context <span class="step-number ms-2">2</span>Photo check <span class="step-number ms-2">3</span>Next steps</div>
+          <button type="submit" class="btn btn-farm px-4">Analyse crop photo</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <p class="helper mt-3 mb-0">AI screening supports field observation. Confirm uncertain or serious symptoms with a local agricultural expert before taking control action.</p>
+</main>
+<script>
+  document.getElementById('image').addEventListener('change', function () {
+    const preview = document.getElementById('image-preview');
+    if (this.files && this.files[0]) {
+      preview.src = URL.createObjectURL(this.files[0]);
+      preview.classList.remove('d-none');
+    } else {
+      preview.removeAttribute('src');
+      preview.classList.add('d-none');
+    }
+  });
+</script>
+{% endblock body %}

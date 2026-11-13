@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block pagetitle %}Crop assessment results{% endblock pagetitle %}
+{% block body %}
+<style>
+  body { background: #f4f7f2; min-height: 100vh; color: #193324; }
+  .result-wrap { max-width: 1120px; margin: 0 auto; padding: 38px 18px 64px; }
+  .result-card { background: #fff; border: 1px solid #e2e9df; border-radius: 18px; box-shadow: 0 12px 32px #183b2510; }
+  .eyebrow { color: #477451; font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .result-title { color: #173b27; font-weight: 750; letter-spacing: -.025em; }
+  .photo { width: 100%; max-height: 380px; object-fit: cover; border-radius: 14px; background: #edf2ec; }
+  .confidence { color: #1c6036; font-size: 2.5rem; line-height: 1; font-weight: 750; }
+  .prediction-row { border-bottom: 1px solid #edf1eb; padding: 12px 0; }
+  .prediction-row:last-child { border-bottom: 0; }
+  .progress { height: 8px; background: #eaf0e8; }
+  .progress-bar { background: #4a9a5d; }
+  .risk-card { border-left: 6px solid #d79b35; }
+  .risk-high { border-left-color: #c44e42; }
+  .risk-low { border-left-color: #4a9a5d; }
+  .risk-uncertain { border-left-color: #d79b35; }
+  .context-chip { display: inline-block; background: #eef5ed; border-radius: 20px; padding: 7px 12px; margin: 3px; font-size: .9rem; }
+  .helper { color: #657568; font-size: .9rem; }
+  .section-heading { color: #193f2a; font-size: 1.15rem; font-weight: 700; }
+  .btn-farm { background: #1f6a3b; border-color: #1f6a3b; color: #fff; font-weight: 700; }
+  .btn-farm:hover { background: #174f2c; color: #fff; }
+</style>
+<main class="result-wrap">
+  <p class="eyebrow mb-2">CropCare · Image screening result</p>
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+    <div><h1 class="result-title h2 mb-1">Your crop check</h1><p class="helper mb-0">Review the likely match, screening priority and suggested field checks.</p></div>
+    <a href="/index" class="btn btn-farm px-4">Start another check</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <section class="result-card p-3 p-md-4 h-100">
+        <img class="photo" src="{{ image_url }}" alt="Uploaded crop leaf">
+        <div class="mt-3">
+          {% if crop %}<span class="context-chip">Crop: {{ crop }}</span>{% endif %}
+          {% if growth_stage %}<span class="context-chip">Stage: {{ growth_stage }}</span>{% endif %}
+          {% if location %}<span class="context-chip">Location: {{ location }}</span>{% endif %}
+        </div>
+        {% if crop_mismatch %}<div class="alert alert-warning mt-3 mb-0">The leading image match appears to be a different crop from the one selected. Check the photo and crop selection before acting.</div>{% endif %}
+      </section>
+    </div>
+    <div class="col-lg-7">
+      <section class="result-card p-4 p-md-5 mb-4">
+        <div class="eyebrow mb-2">Top image match</div>
+        <h2 class="result-title h3 mb-3">{{ title }}</h2>
+        <div class="confidence">{{ '%.1f'|format(confidence) }}%</div>
+        <div class="helper mt-2">Model confidence score · not a guarantee of diagnosis</div>
+        <hr class="my-4">
+        <h3 class="section-heading">Other possible matches</h3>
+        {% for item in top_predictions %}
+        <div class="prediction-row">
+          <div class="d-flex justify-content-between gap-3 mb-2">
+            <span>{{ loop.index }}. {{ item.title }}</span><strong>{{ '%.1f'|format(item.confidence) }}%</strong>
+          </div>
+          <div class="progress" role="progressbar" aria-label="{{ item.title }} score" aria-valuenow="{{ item.confidence|round|int }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ item.confidence }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </section>
+      <section class="result-card risk-card risk-{{ risk_level }} p-4 mb-4">
+        <div class="eyebrow mb-2">Screening priority · rule-based</div>
+        <h2 class="section-heading mb-2">{{ risk_title }}</h2>
+        <p class="mb-0">{{ risk_note }}</p>
+      </section>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-0">
+    <div class="col-lg-5">
+      <section class="result-card p-4 h-100">
+        <h2 class="section-heading">What the model matched</h2>
+        <p class="mb-0">{{ desc }}</p>
+      </section>
+    </div>
+    <div class="col-lg-7">
+      <section class="result-card p-4 p-md-5">
+        <div class="eyebrow mb-2">Integrated pest management</div>
+        <h2 class="section-heading">Practical next steps</h2>
+        <ol class="mb-3 ps-3">
+          {% for step in ipm_steps %}<li class="mb-2 ps-1">{{ step }}</li>{% endfor %}
+        </ol>
+        <p class="helper mb-0">General field guidance only. Confirm the cause locally; follow registered product labels and extension advice if a treatment is recommended.</p>
+      </section>
+    </div>
+  </div>
+  <p class="helper mt-4 mb-0">The CNN evaluates the uploaded image only. Crop, growth stage and location are shown for reference and are not inputs to the model or a weather-based forecast.</p>
+</main>
+{% endblock body %}
